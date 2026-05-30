@@ -7,7 +7,7 @@ public class Banco {
 
     // ─── Auxiliares ──────────────────────────────────────────────────────────────
 
-    /** Lê uma conta do teclado sem validação de duplicata/negativos. */
+    
     private static Conta lerConta(Scanner sc) {
         Conta c = new Conta();
         System.out.print("ID: ");
@@ -30,11 +30,7 @@ public class Banco {
 
     // ─── Questão 1 ───────────────────────────────────────────────────────────────
 
-    /**
-     * Cadastra uma nova conta corrente.
-     * Regras: sem ID duplicado, saldo >= 0, limite >= 0, vetor não cheio.
-     * Retorna o novo tamanho do vetor.
-     */
+    
     public static int cadastrarConta(Conta[] v, int tam) {
         if (tam >= TAM_CONTAS) {
             System.out.println("Vetor de contas está cheio.");
@@ -63,10 +59,7 @@ public class Banco {
 
     // ─── Questão 2 ───────────────────────────────────────────────────────────────
 
-    /**
-     * Busca binária pelo campo cliente (vetor deve estar ordenado alfabeticamente).
-     * Retorna a posição encontrada ou -1.
-     */
+   
     public static int buscaBinariaCliente(Conta[] v, int tam, String x) {
         int inicio = 0, fim = tam - 1;
 
@@ -83,10 +76,7 @@ public class Banco {
 
     // ─── Questão 3 ───────────────────────────────────────────────────────────────
 
-    /**
-     * Ordena o vetor de contas por insertion sort pelo campo cliente (alfabético).
-     * Retorna o tamanho (inalterado).
-     */
+  
     public static int insertionSortCliente(Conta[] v, int tam) {
         for (int i = 1; i < tam; i++) {
             Conta chave = v[i];
@@ -103,10 +93,7 @@ public class Banco {
 
     // ─── Questão 4 ───────────────────────────────────────────────────────────────
 
-    /**
-     * Filtra em vOpFiltrado todas as operações do vetor vOp cujo idConta == x.
-     * Retorna o tamanho de vOpFiltrado.
-     */
+    
     public static int filtraOperacoes(Operacao[] vOp, int tamOp,
                                       Operacao[] vOpFiltrado, int x) {
         int tamFiltrado = 0;
@@ -138,10 +125,6 @@ public class Banco {
         }
     }
 
-    /**
-     * Imprime o extrato com as 5 últimas operações de uma conta,
-     * mostrando saldo anterior acumulado e saldo após cada operação.
-     */
     public static void extrato(Conta[] vContas, int tamConta,
                                Operacao[] vOp,    int tamOp) {
 
