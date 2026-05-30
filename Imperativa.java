@@ -1,225 +1,201 @@
 import java.util.Scanner;
 
-public class Main {
+public class Banco {
 
-    static Scanner sc = new Scanner(System.in);
+    public static final int TAM_CONTAS = 50;
+    public static final int TAM_OP = 1000;
 
-    // Classe Pessoa
-    static class Pessoa {
-        String nome;
-        int idade;
-        double peso, altura;
+    // ─── Auxiliares ──────────────────────────────────────────────────────────────
+
+    /** Lê uma conta do teclado sem validação de duplicata/negativos. */
+    private static Conta lerConta(Scanner sc) {
+        Conta c = new Conta();
+        System.out.print("ID: ");
+        c.id = sc.nextInt(); sc.nextLine();
+        System.out.print("Cliente: ");
+        c.cliente = sc.nextLine();
+        System.out.print("Saldo: ");
+        c.saldo = sc.nextDouble();
+        System.out.print("Limite: ");
+        c.limite = sc.nextDouble(); sc.nextLine();
+        return c;
     }
 
-    // QUESTÃO 1 - Buscar pessoa pelo nome
-    public static int buscarPessoa(Pessoa[] v, int qtd, String nome) {
-
-        for (int i = 0; i < qtd; i++) {
-            if (v[i].nome.equalsIgnoreCase(nome)) {
-                return i;
-            }
-        }
-
+    /** Já fornecida pelo enunciado. */
+    public static int buscaId(Conta[] v, int tam, int x) {
+        for (int i = 0; i < tam; i++)
+            if (v[i].id == x) return i;
         return -1;
     }
 
-    // QUESTÃO 1 - Cadastrar pessoa
-    public static int cadastrarPessoa(Pessoa[] v, int qtd) {
+    // ─── Questão 1 ───────────────────────────────────────────────────────────────
 
-        // verificar se o vetor está cheio
-        if (qtd >= v.length) {
-            System.out.println("Vetor cheio!");
-            return qtd;
+    /**
+     * Cadastra uma nova conta corrente.
+     * Regras: sem ID duplicado, saldo >= 0, limite >= 0, vetor não cheio.
+     * Retorna o novo tamanho do vetor.
+     */
+    public static int cadastrarConta(Conta[] v, int tam) {
+        if (tam >= TAM_CONTAS) {
+            System.out.println("Vetor de contas está cheio.");
+            return tam;
         }
 
-        Pessoa p = new Pessoa();
-        String nome;
+        Scanner sc = new Scanner(System.in);
+        Conta nova = lerConta(sc);
 
-        // garantir nome único
-        do {
-            System.out.print("Digite o nome: ");
-            nome = sc.nextLine();
-
-            if (buscarPessoa(v, qtd, nome) != -1) {
-                System.out.println("Nome já cadastrado. Digite outro.");
-            }
-
-        } while (buscarPessoa(v, qtd, nome) != -1);
-
-        p.nome = nome;
-
-        System.out.print("Digite a idade: ");
-        p.idade = sc.nextInt();
-
-        System.out.print("Digite o peso: ");
-        p.peso = sc.nextDouble();
-
-        System.out.print("Digite a altura: ");
-        p.altura = sc.nextDouble();
-        sc.nextLine();
-
-        // adicionar no final do vetor
-        v[qtd] = p;
-
-        return qtd + 1;
-    }
-
-    // QUESTÃO 2 - Calcular IMC
-    public static double calcularIMC(double peso, double altura) {
-        return peso / (altura * altura);
-    }
-
-    // QUESTÃO 2 - Imprimir pessoas
-    public static void imprimirPessoas(Pessoa[] v, int qtd) {
-
-        if (qtd == 0) {
-            System.out.println("Nenhuma pessoa cadastrada.");
-            return;
+        if (buscaId(v, tam, nova.id) != -1) {
+            System.out.println("Erro: ID já cadastrado.");
+            return tam;
+        }
+        if (nova.saldo < 0) {
+            System.out.println("Erro: saldo não pode ser negativo.");
+            return tam;
+        }
+        if (nova.limite < 0) {
+            System.out.println("Erro: limite não pode ser negativo.");
+            return tam;
         }
 
-        for (int i = 0; i < qtd; i++) {
-
-            double imc = calcularIMC(v[i].peso, v[i].altura);
-
-            System.out.println("\nPessoa " + (i + 1));
-            System.out.println("Nome: " + v[i].nome);
-            System.out.println("Idade: " + v[i].idade);
-            System.out.println("Peso: " + v[i].peso);
-            System.out.println("Altura: " + v[i].altura);
-            System.out.printf("IMC: %.2f\n", imc);
-        }
+        v[tam] = nova;
+        return tam + 1;
     }
 
-    // QUESTÃO 3 - Pessoa mais velha com IMC Magreza
-    public static int maisVelhaIMCMagreza(Pessoa[] v, int qtd) {
+    // ─── Questão 2 ───────────────────────────────────────────────────────────────
 
-        int indice = -1;
-        int maiorIdade = -1;
+    /**
+     * Busca binária pelo campo cliente (vetor deve estar ordenado alfabeticamente).
+     * Retorna a posição encontrada ou -1.
+     */
+    public static int buscaBinariaCliente(Conta[] v, int tam, String x) {
+        int inicio = 0, fim = tam - 1;
 
-        for (int i = 0; i < qtd; i++) {
+        while (inicio <= fim) {
+            int meio = (inicio + fim) / 2;
+            int cmp = v[meio].cliente.compareToIgnoreCase(x);
 
-            double imc = calcularIMC(v[i].peso, v[i].altura);
-
-            if (imc < 18.5) {
-
-                if (v[i].idade > maiorIdade) {
-                    maiorIdade = v[i].idade;
-                    indice = i;
-                }
-            }
+            if (cmp == 0)  return meio;
+            if (cmp < 0)   inicio = meio + 1;
+            else           fim    = meio - 1;
         }
-
-        return indice;
+        return -1;
     }
 
-    // QUESTÃO 4 - Insertion Sort por nome
-    public static void insertionSortPorNome(Pessoa[] v, int qtd) {
+    // ─── Questão 3 ───────────────────────────────────────────────────────────────
 
-        for (int i = 1; i < qtd; i++) {
-
-            Pessoa chave = v[i];
+    /**
+     * Ordena o vetor de contas por insertion sort pelo campo cliente (alfabético).
+     * Retorna o tamanho (inalterado).
+     */
+    public static int insertionSortCliente(Conta[] v, int tam) {
+        for (int i = 1; i < tam; i++) {
+            Conta chave = v[i];
             int j = i - 1;
 
-            while (j >= 0 &&
-                    v[j].nome.compareToIgnoreCase(chave.nome) > 0) {
-
+            while (j >= 0 && v[j].cliente.compareToIgnoreCase(chave.cliente) > 0) {
                 v[j + 1] = v[j];
                 j--;
             }
-
             v[j + 1] = chave;
         }
+        return tam;
     }
 
-    // QUESTÃO 5 - Contar pessoas por faixa de IMC
-    public static int contarPessoasPorIMC(Pessoa[] v, int qtd,
-                                           double imcMin, double imcMax) {
+    // ─── Questão 4 ───────────────────────────────────────────────────────────────
 
-        int contador = 0;
+    /**
+     * Filtra em vOpFiltrado todas as operações do vetor vOp cujo idConta == x.
+     * Retorna o tamanho de vOpFiltrado.
+     */
+    public static int filtraOperacoes(Operacao[] vOp, int tamOp,
+                                      Operacao[] vOpFiltrado, int x) {
+        int tamFiltrado = 0;
 
-        for (int i = 0; i < qtd; i++) {
-
-            double imc = calcularIMC(v[i].peso, v[i].altura);
-
-            if (imc >= imcMin && imc <= imcMax) {
-                contador++;
+        for (int i = 0; i < tamOp; i++) {
+            if (vOp[i].idConta == x) {
+                vOpFiltrado[tamFiltrado] = vOp[i];
+                tamFiltrado++;
             }
         }
-
-        return contador;
+        return tamFiltrado;
     }
 
-    // MAIN
-    public static void main(String[] args) {
+    // ─── Questão 5 ───────────────────────────────────────────────────────────────
 
-        Pessoa[] pessoas = new Pessoa[100];
-        int qtd = 0;
-        int opcao;
+    /** Formata um valor double como "NNNN.NNC" ou "NNNN.NND". */
+    private static String formatarValor(double v) {
+        char sinal = v >= 0 ? 'C' : 'D';
+        return String.format("%.2f%c", Math.abs(v), sinal);
+    }
 
-        do {
+    /** Descrição textual do tipo de operação. */
+    private static String descricaoTipo(char tipo) {
+        switch (tipo) {
+            case 'D': return "Depósito";
+            case 'S': return "Saque";
+            case 'T': return "Transferência";
+            default:  return "Desconhecido";
+        }
+    }
 
-            System.out.println("\n===== MENU =====");
-            System.out.println("1 - Cadastrar Pessoa");
-            System.out.println("2 - Imprimir Pessoas");
-            System.out.println("3 - Pessoa mais velha com IMC Magreza");
-            System.out.println("4 - Ordenar por Nome");
-            System.out.println("5 - Contar pessoas por faixa de IMC");
-            System.out.println("0 - Sair");
-            System.out.print("Escolha: ");
+    /**
+     * Imprime o extrato com as 5 últimas operações de uma conta,
+     * mostrando saldo anterior acumulado e saldo após cada operação.
+     */
+    public static void extrato(Conta[] vContas, int tamConta,
+                               Operacao[] vOp,    int tamOp) {
 
-            opcao = sc.nextInt();
-            sc.nextLine();
+        Scanner sc = new Scanner(System.in);
+        System.out.print("Digite o ID da conta: ");
+        int idBuscado = sc.nextInt();
 
-            switch (opcao) {
+        int posConta = buscaId(vContas, tamConta, idBuscado);
+        if (posConta == -1) {
+            System.out.println("Conta não encontrada.");
+            return;
+        }
 
-                case 1:
-                    qtd = cadastrarPessoa(pessoas, qtd);
-                    break;
+        Conta conta = vContas[posConta];
 
-                case 2:
-                    imprimirPessoas(pessoas, qtd);
-                    break;
+        // Filtra apenas as operações desta conta
+        Operacao[] filtradas = new Operacao[TAM_OP];
+        int tamFiltrado = filtraOperacoes(vOp, tamOp, filtradas, idBuscado);
 
-                case 3:
-                    int indice = maisVelhaIMCMagreza(pessoas, qtd);
+        // Determina janela das últimas 5
+        int inicio = Math.max(0, tamFiltrado - 5);
 
-                    if (indice == -1) {
-                        System.out.println("Nenhuma pessoa com IMC Magreza.");
-                    } else {
-                        System.out.println("Pessoa encontrada:");
-                        System.out.println("Nome: " +
-                                pessoas[indice].nome);
-                    }
-                    break;
+        // Calcula saldo anterior às 5 últimas operações (partindo de saldo 0)
+        double saldoAnterior = 0;
+        for (int i = 0; i < inicio; i++) {
+            saldoAnterior += filtradas[i].valor;
+        }
 
-                case 4:
-                    insertionSortPorNome(pessoas, qtd);
-                    System.out.println("Pessoas ordenadas!");
-                    break;
+        // Impressão do extrato
+        System.out.println("+----------------------------------------+");
+        System.out.printf( "| CONTA N.%03d%29s%n", conta.id, "|");
+        System.out.println("+----------------------------------------+");
+        System.out.printf( "|CLIENTE: %-31s|%n", conta.cliente);
+        System.out.println("+----------------------------------------+");
+        System.out.println("| ID | OPERAÇÃO        | VALOR  | SALDO  |");
+        System.out.println("+----+-----------------+--------+--------+");
+        System.out.printf( "|    |Saldo Anterior   |        |%8s|%n",
+                           formatarValor(saldoAnterior));
 
-                case 5:
+        double saldoCorrente = saldoAnterior;
+        for (int i = inicio; i < tamFiltrado; i++) {
+            Operacao op = filtradas[i];
+            saldoCorrente += op.valor;
 
-                    System.out.print("Digite IMC minimo: ");
-                    double min = sc.nextDouble();
+            System.out.printf("|%04d|%-17s|%8s|%8s|%n",
+                op.id,
+                descricaoTipo(op.tipo),
+                formatarValor(op.valor),
+                formatarValor(saldoCorrente));
+        }
 
-                    System.out.print("Digite IMC maximo: ");
-                    double max = sc.nextDouble();
-
-                    int total =
-                            contarPessoasPorIMC(pessoas, qtd, min, max);
-
-                    System.out.println(
-                            "Quantidade encontrada: " + total);
-                    break;
-
-                case 0:
-                    System.out.println("Programa encerrado.");
-                    break;
-
-                default:
-                    System.out.println("Opcao invalida.");
-            }
-
-        } while (opcao != 0);
+        System.out.println("+----+-----------------+--------+--------+");
+        System.out.printf( "| Saldo Atual             |        |%8s|%n",
+                           formatarValor(saldoCorrente));
+        System.out.println("+--------+");
     }
 }
